@@ -25,8 +25,16 @@ class TaskView(MethodView):
 
     @access_auth_middleware
     def get(self) -> ResponseReturnValue:
-        request_data = request.get_json()
-        task_params = GetAllTaskParams(accountId=request.account_id, **request_data)
+        request_args = request.args.to_dict()
+        page = int(request_args.get('page', 1)) if 'page' in request_args else 1
+        size = int(request_args.get('size', None)) if 'size' in request_args else None
+
+        task_params = GetAllTaskParams(
+            accountId=request.account_id,
+            page=page,
+            size=size
+        )
+        print(task_params)
         tasks = TaskService.get_tasks_for_account(params=task_params)
         task_dicts = [asdict(task) for task in tasks] 
         return jsonify(task_dicts), 200
